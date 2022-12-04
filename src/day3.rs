@@ -2,7 +2,6 @@
 use std::io::BufRead;
 use std::collections::{BTreeSet,BTreeMap};
 use adventlib::aoc;
-use itertools::Itertools;
 
 #[derive(Hash,PartialEq, PartialOrd, Eq, Ord,Copy,Clone)]
 struct Item(u8);
@@ -14,11 +13,11 @@ impl std::fmt::Debug for Item {
 }
 
 impl Item {
-    fn priority(&self) -> u32 {
+    fn priority(self) -> u32 {
         if self.0 >= b'a' && self.0 <= b'z' {
-            (self.0 - b'a' + 1) as u32
+            u32::from(self.0 - b'a' + 1)
         } else if self.0 >= b'A' && self.0 <= b'Z' {
-            (self.0 - b'A' + 27) as u32
+            u32::from(self.0 - b'A' + 27)
         } else {
             unreachable!()
         }

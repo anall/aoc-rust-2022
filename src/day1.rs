@@ -11,7 +11,7 @@ struct ElfData {
 impl ElfData {
     fn new(calories : Vec<u32>) -> Self {
         Self {
-            total_calories: calories.iter().sum(),
+            total_calories: calories.into_iter().sum(),
             //calories
         }
     }
@@ -25,8 +25,8 @@ fn main() -> aoc::Result<()> {
         let mut current_elf : Vec<u32> = Vec::new();
         for line_result in reader.lines() {
             let line = line_result?;
-            if line.len() == 0 {
-                elves.push( ElfData::new( mem::replace(&mut current_elf,Vec::new()) ) );
+            if line.is_empty() {
+                elves.push( ElfData::new( mem::take(&mut current_elf) ) );
             } else {
                 current_elf.push( line.parse::<u32>().unwrap() );
             }
@@ -38,8 +38,6 @@ fn main() -> aoc::Result<()> {
         elves.sort_by_key(|elf| std::cmp::Reverse(elf.total_calories));
         elves
     };
-
-    //println!("{:?}",elves);
 
     println!("{}",elves[0].total_calories);
     println!("{}",elves[0..3].iter().map(|elf| elf.total_calories).sum::<u32>());
