@@ -1,14 +1,14 @@
-#![warn( clippy::pedantic )]
-use std::io::BufRead;
-use std::collections::{BTreeSet,BTreeMap};
+#![warn(clippy::pedantic)]
 use adventlib::aoc;
+use std::collections::{BTreeMap, BTreeSet};
+use std::io::BufRead;
 
-#[derive(Hash,PartialEq, PartialOrd, Eq, Ord,Copy,Clone)]
+#[derive(Hash, PartialEq, PartialOrd, Eq, Ord, Copy, Clone)]
 struct Item(u8);
 
 impl std::fmt::Debug for Item {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f,"{}",self.0 as char)
+        write!(f, "{}", self.0 as char)
     }
 }
 
@@ -24,21 +24,24 @@ impl Item {
     }
 }
 #[derive(Debug)]
-struct Rucksack(BTreeSet<Item>,BTreeSet<Item>);
+struct Rucksack(BTreeSet<Item>, BTreeSet<Item>);
 
 impl Rucksack {
-    fn parse(s : &str) -> Self {
+    fn parse(s: &str) -> Self {
         let bytes = s.as_bytes();
         let mid = bytes.len() / 2;
-        assert_eq!(mid*2, bytes.len());
+        assert_eq!(mid * 2, bytes.len());
 
-        Rucksack( bytes[0..mid].iter().copied().map(Item).collect(), bytes[mid..].iter().copied().map(Item).collect() )
+        Rucksack(
+            bytes[0..mid].iter().copied().map(Item).collect(),
+            bytes[mid..].iter().copied().map(Item).collect(),
+        )
     }
 
-    fn all_items(&self) -> impl Iterator<Item=Item> + '_ {
+    fn all_items(&self) -> impl Iterator<Item = Item> + '_ {
         self.0.union(&self.1).copied()
     }
-    
+
     fn in_both(&self) -> Item {
         let mut intersect = self.0.intersection(&self.1);
         let result = intersect.next().unwrap();
@@ -46,25 +49,55 @@ impl Rucksack {
         *result
     }
 }
+fn solve(filename: &str) -> aoc::Result<(u32, u32)> {
+    let reader = aoc::file(filename)?;
+
+    let sacks: Vec<_> = reader
+        .lines()
+        .map(|line| Rucksack::parse(&line.unwrap()))
+        .collect();
+
+    Ok((
+        sacks
+            .iter()
+            .map(|sack| sack.in_both().priority())
+            .sum::<u32>(),
+        sacks
+            .chunks(3)
+            .map(|group| {
+                let mut item_counts: BTreeMap<Item, u32> = BTreeMap::new();
+                for sack in group {
+                    for item in sack.all_items() {
+                        *item_counts.entry(item).or_default() += 1;
+                    }
+                }
+                item_counts.retain(|_, v| *v == 3);
+                assert_eq!(item_counts.len(), 1);
+
+                item_counts.keys().next().unwrap().priority()
+            })
+            .sum::<u32>(),
+    ))
+}
+
 fn main() -> aoc::Result<()> {
-    let reader = aoc::file("inputs/day3")?;
+    let (part1, part2) = solve("inputs/day3")?;
 
-    let sacks : Vec<_> = reader.lines().map(|line| Rucksack::parse( &line.unwrap() ) ).collect();
+    println!("{}", part1);
+    println!("{}", part2);
 
-    println!("{}",sacks.iter().map(|sack| sack.in_both().priority()).sum::<u32>());
+    Ok(())
+}
 
-    println!("{}",sacks.chunks(3).map(|group| {
-        let mut item_counts : BTreeMap<Item,u32> = BTreeMap::new();
-        for sack in group {
-            for item in sack.all_items() {
-                *item_counts.entry(item).or_default() += 1;
-            }
-        }
-        item_counts.retain(|_,v| *v == 3);
-        assert_eq!(item_counts.len(),1);
+#[cfg(test)]
+mod test {
+    use crate::solve;
 
-        item_counts.keys().next().unwrap().priority()
-    }).sum::<u32>());
+    #[test]
+    fn sample() {
+        let (part1, part2) = solve("inputs-sample/day3").unwrap();
 
-    Ok( () )
+        assert_eq!(part1, 157);
+        assert_eq!(part2, 70);
+    }
 }
