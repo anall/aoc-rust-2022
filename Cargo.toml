@@ -19,6 +19,14 @@ name = "aoc22-day3"
 path = "src/day3.rs"
 
 [[bin]]
+name = "aoc22-day4"
+path = "src/day4.rs"
+
+[[bin]]
+name = "aoc22-day5"
+path = "src/day5.rs"
+
+[[bin]]
 name = "aoc22-day6"
 path = "src/day6.rs"
 
@@ -33,5 +41,4 @@ itertools = "~0.10.3"
 console-bitmap = { git = "https://github.com/anall/console-bitmap-rs" }
 pathfinding = "2.2.2"
 lazy_static = "~1.4.0"
-
 #intspan = "~0.4.14"
