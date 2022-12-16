@@ -8,8 +8,10 @@ use std::{cmp::Ordering, io::BufRead};
 #[serde(untagged)]
 enum Value {
     Integer(u32),
-    Divider(u32),
     List(Vec<Value>),
+
+    #[serde(skip)]
+    Divider(u32),
 }
 impl std::fmt::Debug for Value {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
