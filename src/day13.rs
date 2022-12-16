@@ -1,4 +1,5 @@
 #![warn(clippy::pedantic)]
+#![allow(clippy::uninlined_format_args)]
 use adventlib::aoc::{self};
 use serde::Deserialize;
 use std::{cmp::Ordering, io::BufRead};

@@ -1,4 +1,5 @@
 #![warn(clippy::pedantic)]
+#![allow(clippy::uninlined_format_args)]
 use adventlib::aoc;
 use console_bitmap::{draw_from_vec, BraillePatterns};
 use lazy_static::lazy_static;

@@ -1,4 +1,5 @@
 #![warn(clippy::pedantic)]
+#![allow(clippy::uninlined_format_args)]
 use adventlib::aoc::{
     self,
     point2d::{Direction, Point2D},

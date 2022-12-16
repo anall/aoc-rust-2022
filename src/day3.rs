@@ -1,4 +1,5 @@
 #![warn(clippy::pedantic)]
+#![allow(clippy::uninlined_format_args)]
 use adventlib::aoc;
 use std::collections::{BTreeMap, BTreeSet};
 use std::io::BufRead;
