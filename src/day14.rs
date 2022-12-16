@@ -1,20 +1,14 @@
 #![warn(clippy::pedantic)]
 #![allow(clippy::uninlined_format_args)]
 use adventlib::aoc;
-use itertools::Itertools;
-use regex::Regex;
-use std::{
-    cmp,
-    collections::{HashMap, HashSet},
-    fmt::Display,
-    io::BufRead,
-};
+use std::{cmp, io::BufRead};
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
 enum Tile {
     Empty,
     Wall,
     Sand,
+    Floor,
 }
 impl std::fmt::Display for Tile {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -25,11 +19,25 @@ impl std::fmt::Display for Tile {
                 Tile::Empty => ' ',
                 Tile::Wall => '#',
                 Tile::Sand => 'o',
+                Tile::Floor => '-',
             }
         )
     }
 }
 
+#[allow(dead_code)]
+fn dump_map(map: &[Vec<Tile>]) {
+    for line in map {
+        print!("|");
+        for ch in line {
+            print!("{}", ch);
+        }
+        println!("|");
+    }
+}
+
+#[allow(clippy::needless_range_loop)]
+#[allow(clippy::too_many_lines)]
 fn solve(filename: &str) -> aoc::Result<(u32, u32)> {
     let reader = aoc::file(filename)?;
 
@@ -39,7 +47,7 @@ fn solve(filename: &str) -> aoc::Result<(u32, u32)> {
             line.unwrap()
                 .split(" -> ")
                 .map(|point| {
-                    let mut parts = point.split(",");
+                    let mut parts = point.split(',');
                     (
                         parts.next().unwrap().parse::<usize>().unwrap(),
                         parts.next().unwrap().parse::<usize>().unwrap(),
@@ -60,10 +68,11 @@ fn solve(filename: &str) -> aoc::Result<(u32, u32)> {
         }
     }
 
-    assert!(min_x > 50);
-    min_x -= 50;
-    max_x += 50;
-    max_y += 1;
+    // FIXME: this is gross
+    assert!(min_x > 300);
+    min_x -= 300;
+    max_x += 300;
+    max_y += 2;
     assert!(min_x < max_x);
 
     let mut map: Vec<Vec<Tile>> = vec![vec![Tile::Empty; max_x - min_x]; max_y + 1];
@@ -87,12 +96,8 @@ fn solve(filename: &str) -> aoc::Result<(u32, u32)> {
         }
     }
 
-    for line in &map {
-        print!("|");
-        for ch in line {
-            print!("{}",ch);
-        }
-        println!("|");
+    for x in 0..(max_x - min_x) {
+        map[max_y][x] = Tile::Floor;
     }
 
     let mut n_landed = 0;
@@ -120,7 +125,7 @@ fn solve(filename: &str) -> aoc::Result<(u32, u32)> {
                 landed = true;
                 break;
             }
-            if cur_y >= max_y {
+            if cur_y >= max_y || map[cur_y + 1][cur_x] == Tile::Floor {
                 break;
             }
         }
@@ -128,8 +133,35 @@ fn solve(filename: &str) -> aoc::Result<(u32, u32)> {
 
     let part1 = n_landed;
 
+    while map[0][start_x] == Tile::Empty {
+        let mut cur_x = start_x;
+        let mut cur_y = 0;
 
-    Ok((part2, 0))
+        loop {
+            assert!(cur_y < max_y);
+            assert_eq!(map[cur_y][cur_x], Tile::Empty);
+            if map[cur_y + 1][cur_x] == Tile::Empty {
+                cur_y += 1;
+            } else if map[cur_y + 1][cur_x - 1] == Tile::Empty {
+                cur_x -= 1;
+                cur_y += 1;
+            } else if map[cur_y + 1][cur_x + 1] == Tile::Empty {
+                cur_x += 1;
+                cur_y += 1;
+            } else {
+                map[cur_y][cur_x] = Tile::Sand;
+                n_landed += 1;
+                break;
+            }
+            if cur_y >= max_y {
+                break;
+            }
+        }
+    }
+
+    let part2 = n_landed;
+
+    Ok((part1, part2))
 }
 
 fn main() -> aoc::Result<()> {
