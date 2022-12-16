@@ -6,27 +6,30 @@ use std::{cmp::Ordering, io::BufRead};
 
 #[derive(Deserialize, Eq, PartialEq)]
 #[serde(untagged)]
-enum Value {
+enum Value<'a> {
     Integer(u32),
-    List(Vec<Value>),
+    List(Vec<Value<'a>>),
 
     #[serde(skip)]
     Divider(u32),
+    #[serde(skip)]
+    SingletonList(&'a Value<'a>),
 }
-impl std::fmt::Debug for Value {
+impl std::fmt::Debug for Value<'_> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::Integer(val) => write!(f, "{}", val),
             Self::Divider(val) => write!(f, "d:[[{}]]", val),
             Self::List(list) => write!(f, "{:?}", list),
+            Self::SingletonList(val) => write!(f, "[{:?}]", val),
         }
     }
 }
 
-impl Ord for Value {
+impl Ord for Value<'_> {
     fn cmp(&self, other: &Self) -> Ordering {
         use std::cmp::min;
-        use Value::{Divider, Integer, List};
+        use Value::{Divider, Integer, List, SingletonList};
 
         match (self, other) {
             (Integer(l), Integer(r)) => l.cmp(r),
@@ -39,15 +42,37 @@ impl Ord for Value {
                 }
                 l.len().cmp(&r.len())
             }
-            (Integer(l), List(_)) => List(vec![Integer(*l)]).cmp(other),
-            (List(_), Integer(r)) => self.cmp(&List(vec![Integer(*r)])),
+            (List(l), SingletonList(r)) => {
+                if l.is_empty() {
+                    Ordering::Less
+                } else {
+                    match l[0].cmp(r) {
+                        Ordering::Equal if l.len() > 1 => Ordering::Greater,
+                        v => v,
+                    }
+                }
+            }
+            (SingletonList(l), List(r)) => {
+                if r.is_empty() {
+                    Ordering::Greater
+                } else {
+                    match (*l).cmp(&r[0]) {
+                        Ordering::Equal if r.len() > 1 => Ordering::Less,
+                        v => v,
+                    }
+                }
+            }
+            (SingletonList(l), SingletonList(r)) => l.cmp(r),
 
-            (Divider(v), _) => List(vec![List(vec![Integer(*v)])]).cmp(other),
-            (_, Divider(v)) => self.cmp(&List(vec![List(vec![Integer(*v)])])),
+            (Integer(l), List(_) | SingletonList(_)) => SingletonList(&Integer(*l)).cmp(other),
+            (List(_) | SingletonList(_), Integer(r)) => self.cmp(&SingletonList(&Integer(*r))),
+
+            (Divider(v), _) => SingletonList(&SingletonList(&Integer(*v))).cmp(other),
+            (_, Divider(v)) => self.cmp(&SingletonList(&SingletonList(&Integer(*v)))),
         }
     }
 }
-impl PartialOrd for Value {
+impl PartialOrd for Value<'_> {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
         Some(self.cmp(other))
     }
@@ -138,6 +163,12 @@ mod test {
 
         assert_eq!(part1, 13);
         assert_eq!(part2, 140);
+    }
+
+    #[test]
+    fn singleton_list() {
+        assert_eq!(order_helper("[[]]", "[1]"), Ordering::Less);
+        assert_eq!(order_helper("[1]", "[[]]"), Ordering::Greater);
     }
 
     #[test]
