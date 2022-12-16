@@ -88,14 +88,14 @@ fn parse_program(filename: &str) -> aoc::Result<Vec<Instruction>> {
         .collect())
 }
 
-fn solve(filename : &str) -> aoc::Result<(i32,Vec<Vec<bool>>)> {
+fn solve(filename: &str) -> aoc::Result<(i32, Vec<Vec<bool>>)> {
     let program = parse_program(filename)?;
 
-    Ok ( ( part1(&program), part2(&program) ) )
+    Ok((part1(&program), part2(&program)))
 }
 
 #[allow(clippy::similar_names)]
-fn part1(program : &[Instruction]) -> i32 {
+fn part1(program: &[Instruction]) -> i32 {
     let mut execution = ExecutionContext::new(program);
 
     let at_20 = execution.nth(19).unwrap().x * 20;
@@ -105,17 +105,17 @@ fn part1(program : &[Instruction]) -> i32 {
     let at_180 = execution.nth(39).unwrap().x * 180;
     let at_220 = execution.nth(39).unwrap().x * 220;
 
-    at_20+at_60+at_100+at_140+at_180+at_220
+    at_20 + at_60 + at_100 + at_140 + at_180 + at_220
 }
 
-fn part2(program : &[Instruction]) -> Vec<Vec<bool>> {
+fn part2(program: &[Instruction]) -> Vec<Vec<bool>> {
     let mut execution = ExecutionContext::new(program);
     let mut display = Vec::with_capacity(6);
-    for _ in 0 .. 6 {
+    for _ in 0..6 {
         let mut line = Vec::with_capacity(40);
-        for j in 0 .. 40 {
+        for j in 0..40 {
             let position = execution.next().unwrap().x;
-            line.push(j >= position-1 && j <= position + 1);
+            line.push(j >= position - 1 && j <= position + 1);
         }
         display.push(line);
     }
@@ -123,15 +123,15 @@ fn part2(program : &[Instruction]) -> Vec<Vec<bool>> {
 }
 
 fn main() -> aoc::Result<()> {
-    let (part1,part2) = solve("inputs/day10")?;
+    let (part1, part2) = solve("inputs/day10")?;
 
-    println!("{}",part1);
+    println!("{}", part1);
 
     for line in draw_from_vec::<BraillePatterns>(&part2) {
-        println!("{}",line);
+        println!("{}", line);
     }
 
-    Ok( () )
+    Ok(())
 }
 
 #[cfg(test)]
@@ -143,18 +143,18 @@ mod test {
         let program = parse_program("inputs-sample/day10-sample1").unwrap();
         let mut execution = ExecutionContext::new(&program);
 
-        assert_eq!( execution.next().unwrap().x, 1 );
+        assert_eq!(execution.next().unwrap().x, 1);
         // addx 3
-        assert_eq!( execution.next().unwrap().x, 1 );
-        assert_eq!( execution.next().unwrap().x, 1 );
+        assert_eq!(execution.next().unwrap().x, 1);
+        assert_eq!(execution.next().unwrap().x, 1);
         // addx -5
-        assert_eq!( execution.next().unwrap().x, 4 );
-        assert_eq!( execution.next().unwrap().x, 4 );
+        assert_eq!(execution.next().unwrap().x, 4);
+        assert_eq!(execution.next().unwrap().x, 4);
 
-        assert_eq!( execution.next().unwrap().x, -1 );
+        assert_eq!(execution.next().unwrap().x, -1);
     }
 
-    fn convert_display(line : &[bool]) -> String {
+    fn convert_display(line: &[bool]) -> String {
         let mut s = String::with_capacity(line.len());
         for v in line {
             s.push(if *v { '#' } else { '.' });
@@ -165,14 +165,32 @@ mod test {
 
     #[test]
     fn sample2() {
-        let (part1,part2) = solve("inputs-sample/day10-sample2").unwrap();
+        let (part1, part2) = solve("inputs-sample/day10-sample2").unwrap();
         assert_eq!(part1, 13140);
 
-        assert_eq!( convert_display(&part2[0]), "##..##..##..##..##..##..##..##..##..##.." );
-        assert_eq!( convert_display(&part2[1]), "###...###...###...###...###...###...###." );
-        assert_eq!( convert_display(&part2[2]), "####....####....####....####....####...." );
-        assert_eq!( convert_display(&part2[3]), "#####.....#####.....#####.....#####....." );
-        assert_eq!( convert_display(&part2[4]), "######......######......######......####" );
-        assert_eq!( convert_display(&part2[5]), "#######.......#######.......#######....." );
+        assert_eq!(
+            convert_display(&part2[0]),
+            "##..##..##..##..##..##..##..##..##..##.."
+        );
+        assert_eq!(
+            convert_display(&part2[1]),
+            "###...###...###...###...###...###...###."
+        );
+        assert_eq!(
+            convert_display(&part2[2]),
+            "####....####....####....####....####...."
+        );
+        assert_eq!(
+            convert_display(&part2[3]),
+            "#####.....#####.....#####.....#####....."
+        );
+        assert_eq!(
+            convert_display(&part2[4]),
+            "######......######......######......####"
+        );
+        assert_eq!(
+            convert_display(&part2[5]),
+            "#######.......#######.......#######....."
+        );
     }
 }
