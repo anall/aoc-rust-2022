@@ -3,7 +3,7 @@
 use adventlib::aoc::{self, point2d::Point2D, CodeTimer};
 use lazy_static::lazy_static;
 use regex::Regex;
-use std::{io::BufRead, collections::HashSet, cmp};
+use std::{io::BufRead, cmp};
 
 lazy_static! {
     static ref PARSE_REGEX: Regex =
@@ -109,7 +109,7 @@ impl IntSpan {
     }
 }
 
-fn solve(filename: &str, part1_y: i64, part2_extent : i64) -> aoc::Result<(usize, i64)> {
+fn solve(filename: &str, part1_y: i64, part2_extent : i64) -> aoc::Result<(i64, i64)> {
     let mut timer = CodeTimer::new();
 
     let reader = aoc::file(filename)?;
@@ -121,22 +121,16 @@ fn solve(filename: &str, part1_y: i64, part2_extent : i64) -> aoc::Result<(usize
     timer.split("parse");
 
     let part1 = {
-        let mut part1_beaconless = HashSet::new();
+        let mut spans = IntSpan::new();
         for sensor in &sensors {
             let extents = sensor.extents();
-            let distance = sensor.beacon_distance();
-            let sensor_pos = sensor.0;
-            let beacon_pos = sensor.1;
             if extents.is_y_within(part1_y) {
-                for x in extents.min_x..=extents.max_x {
-                    let cand_pos = Point2D(x,part1_y);
-                    if cand_pos != beacon_pos && (cand_pos - sensor_pos).manhattan_distance() <= distance {
-                        part1_beaconless.insert(x);
-                    }
-                }
+                let x_extents_at = extents.x_extents_at(part1_y).unwrap();
+                //println!("adding extent {:?}",x_extents_at);
+                spans.add_range(x_extents_at.0, x_extents_at.1);
             }
         }
-        part1_beaconless.len()
+        spans.ranges.into_iter().map(|span| span.1 - span.0).sum()
     };
 
     timer.split("part1");
@@ -158,6 +152,7 @@ fn solve(filename: &str, part1_y: i64, part2_extent : i64) -> aoc::Result<(usize
             }
             println!("{}",row.into_iter().collect::<String>());
         }
+        timer.split("debug");
     }*/
 
     // blah
@@ -180,7 +175,6 @@ fn solve(filename: &str, part1_y: i64, part2_extent : i64) -> aoc::Result<(usize
         }
         panic!("span not found");
     };
-
 
     timer.stop("part2");
 
