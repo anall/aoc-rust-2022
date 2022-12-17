@@ -62,6 +62,10 @@ path = "src/day13.rs"
 name = "aoc22-day14"
 path = "src/day14.rs"
 
+[[bin]]
+name = "aoc22-day15"
+path = "src/day15.rs"
+
 [dependencies]
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
