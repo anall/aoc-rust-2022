@@ -76,3 +76,4 @@ console-bitmap = { git = "https://github.com/anall/console-bitmap-rs" }
 pathfinding = "2.2.2"
 lazy_static = "~1.4.0"
 #intspan = "~0.4.14"
+rayon = "1.6"

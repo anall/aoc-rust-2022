@@ -2,6 +2,7 @@
 #![allow(clippy::uninlined_format_args)]
 use adventlib::aoc::{self, point2d::Point2D, CodeTimer};
 use lazy_static::lazy_static;
+use rayon::prelude::{IntoParallelIterator, ParallelIterator};
 use regex::Regex;
 use std::{cmp, io::BufRead};
 
@@ -25,6 +26,7 @@ impl SensorExtents {
         y >= self.min_y && y <= self.max_y
     }
 
+    #[inline]
     fn x_extents_at(&self, y: i64) -> Option<(i64, i64)> {
         if self.is_y_within(y) {
             let y_dist = (self.center_y - y).abs();
@@ -159,9 +161,8 @@ fn solve(filename: &str, part1_y: i64, part2_extent: i64) -> aoc::Result<(i64, i
         timer.split("debug");
     }*/
 
-    // blah
-    let part2 = 'part2: {
-        for y in 0..=part2_extent {
+    let part2 = {
+        (0..=part2_extent).into_par_iter().find_map_any(|y| {
             let mut spans = IntSpan::new();
             for sensor in &sensors {
                 let extents = sensor.extents();
@@ -174,10 +175,11 @@ fn solve(filename: &str, part1_y: i64, part2_extent: i64) -> aoc::Result<(i64, i
             if spans.len() > 1 {
                 assert!(spans.len() == 2);
 
-                break 'part2 (spans.ranges[0].1 + 1) * 4_000_000 + y;
+                Some( (spans.ranges[0].1 + 1) * 4_000_000 + y)
+            } else {
+                None
             }
-        }
-        panic!("span not found");
+        }).unwrap()
     };
 
     timer.stop("part2");
