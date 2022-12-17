@@ -2,6 +2,7 @@
 #![allow(clippy::uninlined_format_args)]
 use adventlib::aoc::{self, valid_neigbors_no_diagonal, CodeTimer};
 use pathfinding::directed::astar::astar;
+use rayon::prelude::*;
 use std::io::BufRead;
 
 fn route(
@@ -72,8 +73,9 @@ fn solve(filename: &str) -> aoc::Result<(usize, usize)> {
     // Brute force yaaaay
     let map_ref = &map; // we need to do this because Rust is being weird
     let part2 = (0..m)
+        .into_par_iter()
         .flat_map(|i| {
-            (0..m).filter_map(move |j| {
+            (0..m).into_par_iter().filter_map(move |j| {
                 if map_ref[i][j] == b'a' {
                     route(&(i, j), &end, map_ref, m, n).map(|(_, len)| len)
                 } else {
