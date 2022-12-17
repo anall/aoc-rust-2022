@@ -2,7 +2,7 @@
 #![allow(clippy::uninlined_format_args)]
 use adventlib::aoc::{self, point2d::Point2D, CodeTimer};
 use lazy_static::lazy_static;
-use rayon::prelude::{IntoParallelIterator, ParallelIterator};
+use rayon::prelude::*;
 use regex::Regex;
 use std::{cmp, io::BufRead};
 
