@@ -167,8 +167,7 @@ fn solve(filename: &str, part1_y: i64, part2_extent: i64) -> aoc::Result<(i64, i
             let mut spans = IntSpan::new();
             for sensor in &sensors {
                 let extents = sensor.extents();
-                if extents.is_y_within(y) {
-                    let x_extents_at = extents.x_extents_at(y).unwrap();
+                if let Some(x_extents_at) = extents.x_extents_at(y) {
                     //println!("adding extent {:?}",x_extents_at);
                     spans.add_range(x_extents_at.0, x_extents_at.1);
                 }
