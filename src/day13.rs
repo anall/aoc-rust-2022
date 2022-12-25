@@ -95,9 +95,6 @@ fn solve(filename: &str) -> aoc::Result<(usize, usize)> {
         let left: Value = serde_json::from_str(&left_str).unwrap();
         let right: Value = serde_json::from_str(&right_str).unwrap();
 
-        assert!(left.eq(&left));
-        assert!(right.eq(&right));
-
         let _blank = lines.next();
         if correct_order(&left, &right) {
             part1 += i;
