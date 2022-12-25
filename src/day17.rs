@@ -131,7 +131,7 @@ impl Playfield {
         self.first_empty = cmp::max(self.first_empty, height + self.current_piece.0.len());
 
         // check all pieces to see if there's a point that's closed off
-        for i in height..self.first_empty - 1 {
+        for i in (height..self.first_empty - 1).rev() {
             if i - self.offset >= 1
                 && i >= self.offset
                 && self.field[i - self.offset] | self.field[i - self.offset + 1] == 0b1111111
@@ -245,7 +245,7 @@ fn solve(filename: &str) -> aoc::Result<(usize, usize)> {
         }
         idx = (idx + 1) % moves.len();
     }
-    let part2 = playfield.first_empty - 1 + height_offset.unwrap();
+    let part2 = playfield.first_empty - 1 + height_offset.unwrap_or(0);
     timer.stop("part2");
 
     Ok((part1, part2))
