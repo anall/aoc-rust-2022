@@ -3,10 +3,10 @@
 use adventlib::aoc;
 use std::io::BufRead;
 
-fn convert(number: &[u8]) -> i64 {
+fn convert(number: &str) -> i64 {
     let mut mul = 1;
     let mut result = 0;
-    for val in number.iter().rev() {
+    for val in number.as_bytes().iter().rev() {
         result += mul
             * match val {
                 b'-' => -1,
@@ -20,11 +20,11 @@ fn convert(number: &[u8]) -> i64 {
 }
 
 #[allow(clippy::cast_sign_loss)]
-fn unconvert(mut number: i64) -> Vec<u8> {
+fn unconvert(mut number: i64) -> String {
     let mut out: Vec<u8> = Vec::new();
     let mut borrowed = 0;
 
-    while number > 0 {
+    while number > 0 || borrowed > 0 {
         let cur_val = (number % 5) as u8 + borrowed;
         if cur_val > 2 {
             borrowed = 1;
@@ -32,6 +32,8 @@ fn unconvert(mut number: i64) -> Vec<u8> {
                 out.push(b'=');
             } else if cur_val == 4 {
                 out.push(b'-');
+            } else if cur_val == 5 {
+                out.push(b'0');
             } else {
                 unreachable!();
             }
@@ -43,16 +45,17 @@ fn unconvert(mut number: i64) -> Vec<u8> {
     }
     out.reverse();
 
-    out
+    // SAFETY: this can only be valid unicode
+    unsafe { String::from_utf8_unchecked(out) }
 }
 
 fn solve(filename: &str) -> aoc::Result<(i64, String)> {
     let reader = aoc::file(filename)?;
 
-    let sum = reader.lines().map(|v| convert(v.unwrap().as_bytes())).sum();
-    let snafu_sum = unsafe { String::from_utf8_unchecked(unconvert(sum)) };
+    let sum = reader.lines().map(|v| convert(&v.unwrap())).sum();
+    let snafu_sum = unconvert(sum);
 
-    assert_eq!(convert(snafu_sum.as_bytes()), sum);
+    assert_eq!(convert(&snafu_sum), sum);
 
     Ok((sum, snafu_sum))
 }
@@ -68,7 +71,7 @@ fn main() -> aoc::Result<()> {
 
 #[cfg(test)]
 mod test {
-    use crate::{convert, solve};
+    use crate::{convert, unconvert, solve};
 
     #[test]
     fn sample() {
@@ -80,18 +83,30 @@ mod test {
 
     #[test]
     fn conversions() {
-        assert_eq!(convert(b"1=-0-2"), 1747);
-        assert_eq!(convert(b"12111"), 906);
-        assert_eq!(convert(b"2=0="), 198);
-        assert_eq!(convert(b"21"), 11);
-        assert_eq!(convert(b"2=01"), 201);
-        assert_eq!(convert(b"111"), 31);
-        assert_eq!(convert(b"20012"), 1257);
-        assert_eq!(convert(b"112"), 32);
-        assert_eq!(convert(b"1=-1="), 353);
-        assert_eq!(convert(b"1-12"), 107);
-        assert_eq!(convert(b"12"), 7);
-        assert_eq!(convert(b"1="), 3);
-        assert_eq!(convert(b"122"), 37);
+        assert_eq!(convert("1=-0-2"), 1747);
+        assert_eq!(convert("12111"), 906);
+        assert_eq!(convert("2=0="), 198);
+        assert_eq!(convert("21"), 11);
+        assert_eq!(convert("2=01"), 201);
+        assert_eq!(convert("111"), 31);
+        assert_eq!(convert("20012"), 1257);
+        assert_eq!(convert("112"), 32);
+        assert_eq!(convert("1=-1="), 353);
+        assert_eq!(convert("1-12"), 107);
+        assert_eq!(convert("12"), 7);
+        assert_eq!(convert("1="), 3);
+        assert_eq!(convert("122"), 37);
+
+        assert_eq!(unconvert(5),"10");
+        assert_eq!(convert("10"), 5);
+
+        assert_eq!(unconvert(4),"1-");
+        assert_eq!(convert("1-"), 4);
+
+        assert_eq!(unconvert(3),"1=");
+        assert_eq!(convert("1="), 3);
+
+        assert_eq!(unconvert(24),"10-");
+        assert_eq!(convert("10-"), 24);
     }
 }
